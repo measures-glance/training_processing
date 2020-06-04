@@ -1,0 +1,27 @@
+name: glance
+channels:
+    - conda-forge
+dependencies:
+    # Base
+    - pip
+    - python>=3.7
+    - numpy
+    - scipy
+    - pandas
+    # Statistics
+    - scikit-learn
+    # Plotting
+    - matplotlib
+    - seaborn
+    # Interactive
+    - click
+    - jupyter
+    - jupyterlab
+    - notebook
+    - ipython
+    # GEE
+    - oauth2client
+    - pycrypto
+    - pip:
+        - google-api-python-client
+        - earthengine-api
