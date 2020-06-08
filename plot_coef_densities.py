@@ -43,23 +43,22 @@ def plot_densities(csv, band_list, coef_list):
     property_list = [i + '_' + j for i in bands for j in coefs]  
     for p in property_list:
         click.echo('Saving figure for coefficient {}'.format(p))
-        doRidge(df, pal, xlim, p)
+        doRidge(df, pal,xlim, p)
 
 
 
 def doRidge(df, pal, xlim, coef):
     sns.set(style="white", rc={"axes.facecolor": (0, 0, 0, 0)})
     warnings.filterwarnings('ignore')
-    # plt.style.use('fivethirtyeight')
-
+    
+    # Specifying xlim here breaks the plot for some reason so it's been removed
     g = sns.FacetGrid(df, row="Glance_Class_ID_level1", hue="Glance_Class_ID_level1", 
-                      aspect=10, height=.5, palette=pal,xlim=xlim)
+                      aspect=10, height=.5, palette=pal)
 
     # Draw the densities in a few steps
-    g.map(sns.kdeplot, coef, clip_on=False, shade=True, alpha=1, lw=1.5, bw=.4,
-          clip=xlim)
+    g.map(sns.kdeplot, coef, clip_on=False, shade=True, alpha=1, lw=1.5, bw=.4)
     
-    g.map(sns.kdeplot, coef, clip_on=False, color="black", lw=1, bw=.4,clip=xlim)
+    g.map(sns.kdeplot, coef, clip_on=False, color="black", lw=1, bw=.4)
     
     g.map(plt.axhline, y=0, lw=.5, clip_on=False)
 
@@ -67,7 +66,7 @@ def doRidge(df, pal, xlim, coef):
     # Define and use a simple function to label the plot in axes coordinates
     def label(x, color, label):
         ax = plt.gca()
-        ax.set_xlim(xlim)
+        #ax.set_xlim(xlim)
         ax.text(0, .2, label, fontweight="bold", color='k', fontsize=10,
                 ha="left", va="center", transform=ax.transAxes,clip_on=False)
 
@@ -75,7 +74,7 @@ def doRidge(df, pal, xlim, coef):
     g.map(label, coef)
 
     # Set the subplots to overlap
-    g.fig.subplots_adjust(hspace=-.5)
+    g.fig.subplots_adjust(hspace=-.1)
 
     # Remove axes details that don't play well with overlap
     g.set_titles("")
