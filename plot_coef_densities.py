@@ -32,43 +32,45 @@ def plot_densities(csv, band_list, coef_list):
 
     df = df.replace({'Glance_Class_ID_level1': class_dict})
     df = getCoords(df)
-    df = df.query('Glance_Class_ID_level1 != "NoLabel"').query('Glance_Class_ID_level1 != "Woodland"')
+    df = df.query('Glance_Class_ID_level1 != "NoLabel"')#.query('Glance_Class_ID_level1 != "Woodland"')
     
     # Calculate xlim automatically based on percentiles?
-    xlim=[-.2,.5]
-    pal = ['black','#33a02c','red','#ffff99','#b2df8a','grey','#386cb0',]
+    pal = ['black','#33a02c','red','#ffff99','#b2df8a','grey','#386cb0', 'brown']
     # Build property names based on band and coef lists
     bands = band_list.split()
     coefs = coef_list.split()
     property_list = [i + '_' + j for i in bands for j in coefs]  
     for p in property_list:
         click.echo('Saving figure for coefficient {}'.format(p))
-        doRidge(df, pal,xlim, p)
+        doRidge(df, pal, p)
 
 
 
-def doRidge(df, pal, xlim, coef):
+def doRidge(df, pal, coef):
     sns.set(style="white", rc={"axes.facecolor": (0, 0, 0, 0)})
     warnings.filterwarnings('ignore')
     
-    # Specifying xlim here breaks the plot for some reason so it's been removed
+    # Try defining xlim automatically
+    stats = df[coef].describe()
+    xlim = []
+    xlim.append(df[coef].min() - stats['std']*2)
+    xlim.append(df[coef].max() + stats['std']*2) 
+
     g = sns.FacetGrid(df, row="Glance_Class_ID_level1", hue="Glance_Class_ID_level1", 
-                      aspect=10, height=.5, palette=pal)
+                      aspect=10, height=.5, palette=pal, xlim=xlim)
 
     # Draw the densities in a few steps
-    g.map(sns.kdeplot, coef, clip_on=False, shade=True, alpha=1, lw=1.5, bw=.4)
-    
-    g.map(sns.kdeplot, coef, clip_on=False, color="black", lw=1, bw=.4)
-    
+    g.map(sns.kdeplot, coef, clip_on=True, shade=True, alpha=1, lw=1.5, bw=.05)
+    g.map(sns.kdeplot, coef, clip_on=True, color="black", lw=2, bw=.05)
     g.map(plt.axhline, y=0, lw=.5, clip_on=False)
 
 
     # Define and use a simple function to label the plot in axes coordinates
     def label(x, color, label):
         ax = plt.gca()
-        #ax.set_xlim(xlim)
+        ax.set_xlim(xlim)
         ax.text(0, .2, label, fontweight="bold", color='k', fontsize=10,
-                ha="left", va="center", transform=ax.transAxes,clip_on=False)
+                ha="left", va="center", transform=ax.transAxes)
 
 
     g.map(label, coef)
@@ -80,9 +82,9 @@ def doRidge(df, pal, xlim, coef):
     g.set_titles("")
     g.set(yticks=[])
     g.despine(bottom=True, left=True)
-    plt.tight_layout()
     outname = 'RidgePlot_' + coef + '.png'
     g.savefig(outname, dpi=300)
+#    plt.tight_layout()
     plt.clf()
     plt.close()
 
